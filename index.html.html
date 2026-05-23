@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Team Daily Status | CBTS - OnX</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root{--navy:#0d1b2a;--navy2:#162032;--navy3:#1e2f45;--teal:#00c7b1;--teal2:#00a896;--teal3:#e0faf7;--bg:#f0f4f8;--card:#fff;--border:#d6e0ea;--text:#0d1b2a;--muted:#5a7184;--danger:#e03d3d;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{background:var(--navy);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--teal);}
+.lc{color:var(--teal);font-size:20px;font-weight:700;letter-spacing:-.5px;}
+.ld{color:var(--teal);font-size:20px;margin:0 4px;}
+.ht{color:#fff;font-size:14px;opacity:.8;margin-left:16px;}
+.brfr{background:transparent;border:1px solid rgba(0,199,177,.4);color:var(--teal);border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;}
+.brfr:hover{background:rgba(0,199,177,.1);}
+.page{max-width:960px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+.ph h1{font-size:20px;font-weight:700;color:var(--navy);}
+.ph p{font-size:13px;color:var(--muted);margin-top:3px;}
+.sb{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--teal2);background:var(--teal3);border-radius:20px;padding:2px 10px;margin-left:10px;vertical-align:middle;}
+.sd{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tabs{display:flex;gap:2px;background:var(--navy2);border-radius:10px;padding:4px;width:fit-content;margin:1.25rem 0;flex-wrap:wrap;}
+.tbtn{background:transparent;border:none;color:rgba(255,255,255,.55);font-size:13px;font-weight:500;padding:7px 18px;border-radius:7px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.tbtn.active{background:var(--teal);color:var(--navy);font-weight:700;}
+.tbtn:hover:not(.active){color:#fff;background:var(--navy3);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:14px;}
+.ct{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.tb{width:3px;height:16px;background:var(--teal);border-radius:2px;flex-shrink:0;}
+.sr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.sc{background:var(--navy2);border-radius:10px;padding:14px 16px;}
+.sl{font-size:11px;color:rgba(255,255,255,.55);margin-bottom:4px;}
+.sv{font-size:26px;font-weight:700;color:var(--teal);}
+.sv.wh{color:#fff;}
+
+/* Section dividers inside form */
+.fsec{background:#f8fbfd;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+.fsec-title{font-size:11px;font-weight:700;color:var(--teal2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.fsec-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);}
+
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.fg4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.fg22{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fl{font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px;}
+input[type=text],input[type=date],input[type=month],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:#f8fbfd;outline:none;transition:border-color .15s;}
+textarea{resize:vertical;min-height:56px;line-height:1.5;}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);background:#fff;}
+
+/* Toggle buttons for order type */
+.toggle-group{display:flex;gap:6px;flex-wrap:wrap;}
+.tgl{border:1px solid var(--border);background:#f8fbfd;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s;}
+.tgl.sel{background:var(--teal);color:var(--navy);border-color:var(--teal);font-weight:700;}
+
+/* Remarks autocomplete */
+.rmk-wrap{position:relative;}
+.rmk-suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;max-height:160px;overflow-y:auto;z-index:50;display:none;}
+.rmk-suggestions.open{display:block;}
+.rmk-item{padding:8px 12px;font-size:12px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f0f4f8;}
+.rmk-item:hover{background:var(--teal3);}
+.rmk-count{font-size:10px;color:var(--muted);background:#f0f4f8;border-radius:10px;padding:1px 7px;}
+.rmk-hint{font-size:10px;color:var(--muted);margin-top:3px;}
+
+.bp{background:var(--teal);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.bp:hover{background:var(--teal2);}
+.bp:disabled{opacity:.5;cursor:not-allowed;}
+.bsm{font-size:11px;border:1px solid var(--border);background:transparent;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit;color:var(--muted);}
+.bdsm{font-size:11px;border:1px solid #fca5a5;background:#fef2f2;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit;color:var(--danger);}
+.bexp{font-size:12px;font-weight:700;border:none;background:var(--teal);color:var(--navy);border-radius:8px;padding:8px 18px;cursor:pointer;font-family:inherit;}
+.tlb{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr{background:var(--navy2);}
+thead th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:hover{background:#f8fbfd;}
+tbody td{padding:8px 10px;vertical-align:middle;}
+.tfr td{background:#f0f4f8;font-weight:700;padding:8px 10px;}
+.ba{border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600;white-space:nowrap;}
+.bak{background:#e8e6ff;color:#3c2f8a;}
+.bao{background:var(--teal3);color:#085041;}
+.bav{background:#fff3d6;color:#7a4f00;}
+.bam{background:#fce8ff;color:#6b0a7a;}
+.bas{background:#e8f4ff;color:#0a3d7a;}
+.dm{color:var(--muted);}
+.rmk-cell{font-size:11px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fbfd;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+.av2{width:34px;height:34px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.mi{flex:1;margin-left:10px;}
+.mn{font-size:13px;font-weight:600;color:var(--navy);}
+.mm{font-size:11px;color:var(--muted);}
+.bkd{font-size:11px;font-weight:700;color:var(--teal2);margin-bottom:5px;}
+.pr{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.pill{font-size:11px;background:var(--navy2);color:rgba(255,255,255,.85);border-radius:20px;padding:3px 12px;}
+.empty{text-align:center;padding:2rem;color:var(--muted);font-size:13px;}
+#lov{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px;transition:opacity .3s;}
+#lov.hide{opacity:0;pointer-events:none;}
+.sp{width:36px;height:36px;border:3px solid rgba(0,199,177,.2);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#lov p{color:rgba(255,255,255,.6);font-size:13px;}
+#cban{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:#856404;display:none;}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--danger);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;display:none;z-index:9999;}
+.gs{display:flex;gap:14px;margin-bottom:20px;}
+.gn{width:28px;height:28px;border-radius:50%;background:var(--teal);color:var(--navy);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+code{background:#f0f4f8;padding:3px 8px;border-radius:4px;font-size:12px;}
+.tip{background:var(--teal3);border-left:3px solid var(--teal);border-radius:6px;padding:12px 16px;font-size:12px;color:#085041;margin-top:8px;}
+@media(max-width:680px){.sr{grid-template-columns:1fr 1fr;}.fg3,.fg4,.fg2,.fg22{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="lov">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="color:#00c7b1;font-size:22px;font-weight:700;">cbts</span>
+    <span style="color:#00c7b1;font-size:22px;">&#8226;</span>
+    <span style="color:#00c7b1;font-size:22px;font-weight:700;">onx</span>
+  </div>
+  <div class="sp"></div>
+  <p id="lmsg">Connecting to shared database...</p>
+</div>
+<div id="toast"></div>
+<header>
+  <div style="display:flex;align-items:center;">
+    <span class="lc">cbts</span><span class="ld">&#8226;</span><span class="lc">onx</span>
+    <span class="ht">Team Daily Status</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span id="sstat" style="font-size:11px;color:rgba(255,255,255,.4);"></span>
+    <button class="brfr" onclick="loadAll()">&#8635; Refresh</button>
+  </div>
+</header>
+<div class="page" style="padding-bottom:0;">
+  <div id="cban">
+    <strong>Setup required</strong> &mdash; Open this file in a text editor, find <code>var PA_GET_ENTRIES = ""</code> and paste your Power Automate flow URLs. See the Setup Guide tab for full instructions.
+    <a href="#" onclick="setTab(4,document.querySelectorAll('.tbtn')[4]);return false;" style="color:var(--navy);font-weight:600;margin-left:6px;">View setup guide &rarr;</a>
+  </div>
+</div>
+<div class="page">
+  <div class="ph" style="margin-bottom:0;">
+    <h1>Team Daily Status Dashboard <span class="sb"><span class="sd"></span>Live Shared</span></h1>
+    <p>Log tickets, orders and Avaya calls &mdash; shared across the team via Google Sheets &middot; auto-syncs every 20s</p>
+  </div>
+  <div class="tabs">
+    <button class="tbtn active" onclick="setTab(0,this)">Log Entry</button>
+    <button class="tbtn" onclick="setTab(1,this)">Daily View</button>
+    <button class="tbtn" onclick="setTab(2,this)">Monthly View</button>
+    <button class="tbtn" onclick="setTab(3,this)">Manage Team</button>
+    <button class="tbtn" onclick="setTab(4,this)">Setup Guide</button>
+  </div>
+
+  <!-- LOG ENTRY -->
+  <div id="tab-0">
+    <div class="card">
+      <div class="ct"><span class="tb"></span>Add work entry</div>
+
+      <!-- Common fields -->
+      <div class="fg2" style="margin-bottom:14px;">
+        <div><label class="fl">Date</label><input type="date" id="f-date"/></div>
+        <div><label class="fl">Tech Name</label><select id="f-tech"></select></div>
+      </div>
+
+      <!-- Ticket section -->
+      <div class="fsec">
+        <div class="fsec-title"><span class="fsec-dot"></span>Ticket</div>
+        <div style="max-width:320px;">
+          <label class="fl">Ticket No</label>
+          <input type="text" id="f-ticket" placeholder="e.g. TKT-001"/>
+        </div>
+      </div>
+
+      <!-- Order section -->
+      <div class="fsec">
+        <div class="fsec-title"><span class="fsec-dot" style="background:#1D9E75;"></span>Order</div>
+        <div class="fg22" style="margin-bottom:12px;">
+          <div>
+            <label class="fl">Order No</label>
+            <input type="text" id="f-order" placeholder="e.g. ORD-002"/>
+          </div>
+          <div>
+            <label class="fl">Order Type</label>
+            <div class="toggle-group" id="order-type-group">
+              <button class="tgl" onclick="selectToggle('order-type-group',this,'Manually Distributed')">Manually Distributed</button>
+              <button class="tgl" onclick="selectToggle('order-type-group',this,'Systematically Pushed')">Systematically Pushed</button>
+            </div>
+            <input type="hidden" id="f-order-type" value=""/>
+          </div>
+        </div>
+        <div>
+          <label class="fl">Order Remarks</label>
+          <div class="rmk-wrap">
+            <textarea id="f-order-remarks" placeholder="Type a remark or pick from memory below..." oninput="filterRemarks('order')" onfocus="showRemarks('order')" onblur="hideRemarks('order')" rows="2"></textarea>
+            <div class="rmk-hint">Start typing &mdash; previously used remarks appear as suggestions</div>
+            <div class="rmk-suggestions" id="rmk-order"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avaya section -->
+      <div class="fsec">
+        <div class="fsec-title"><span class="fsec-dot" style="background:#BA7517;"></span>Avaya Call</div>
+        <div class="fg3" style="margin-bottom:12px;">
+          <div>
+            <label class="fl">Caller Name</label>
+            <input type="text" id="f-avaya" placeholder="Caller name"/>
+          </div>
+          <div>
+            <label class="fl">Department</label>
+            <select id="f-avaya-dept"><option value="">-- Select department --</option></select>
+          </div>
+          <div>
+            <label class="fl">Reason for Call</label>
+            <select id="f-avaya-reason"><option value="">-- Select reason --</option></select>
+          </div>
+        </div>
+        <div>
+          <label class="fl">Avaya Remarks</label>
+          <div class="rmk-wrap">
+            <textarea id="f-avaya-remarks" placeholder="Type a remark or pick from memory below..." oninput="filterRemarks('avaya')" onfocus="showRemarks('avaya')" onblur="hideRemarks('avaya')" rows="2"></textarea>
+            <div class="rmk-hint">Start typing &mdash; previously used remarks appear as suggestions</div>
+            <div class="rmk-suggestions" id="rmk-avaya"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;margin-top:4px;">
+        <button class="bp" id="btn-add" onclick="addEntry()">Add Entry</button>
+        <span id="smsg" style="font-size:12px;color:var(--teal2);font-weight:600;display:none;">&#10003; Saved and shared with team</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct"><span class="tb"></span>Today's entries <span id="tcnt" style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px;"></span></div>
+      <div id="tlist"></div>
+    </div>
+  </div>
+
+  <!-- DAILY VIEW -->
+  <div id="tab-1" style="display:none;">
+    <div class="tlb">
+      <input type="date" id="v-date" style="width:auto;" oninput="renderDaily()"/>
+      <button class="bsm" style="padding:6px 14px;" onclick="document.getElementById('v-date').value=todayStr();renderDaily();">Today</button>
+      <span id="dlbl" style="font-size:12px;color:var(--muted);"></span>
+      <button class="bexp" style="margin-left:auto;" onclick="exportExcel('daily')">&#8595; Download Excel</button>
+    </div>
+    <div class="sr" id="dstats"></div>
+    <div class="card"><div class="ct"><span class="tb"></span>By team member</div><div id="dsum"></div></div>
+    <div class="card"><div class="ct"><span class="tb"></span>All entries</div><div id="dent"></div></div>
+  </div>
+
+  <!-- MONTHLY VIEW -->
+  <div id="tab-2" style="display:none;">
+    <div class="tlb">
+      <input type="month" id="v-month" style="width:auto;" oninput="renderMonthly()"/>
+      <span id="mlbl" style="font-size:12px;color:var(--muted);"></span>
+      <button class="bexp" style="margin-left:auto;" onclick="exportExcel('monthly')">&#8595; Download Excel</button>
+    </div>
+    <div class="sr" id="mstats"></div>
+    <div class="card"><div class="ct"><span class="tb"></span>By team member</div><div id="msum"></div></div>
+    <div class="card"><div class="ct"><span class="tb"></span>Daily breakdown</div><div id="mbkd"></div></div>
+  </div>
+
+  <!-- MANAGE TEAM -->
+  <div id="tab-3" style="display:none;">
+
+    <div class="card">
+      <div class="ct"><span class="tb"></span>Add tech member</div>
+      <div style="display:flex;gap:10px;align-items:flex-end;">
+        <div style="flex:1;"><label class="fl">Name</label><input type="text" id="new-tech" placeholder="Enter tech name" onkeydown="if(event.key==='Enter')addTech()"/></div>
+        <button class="bp" onclick="addTech()">Add Member</button>
+      </div>
+      <div id="terr" style="font-size:11px;color:var(--danger);margin-top:6px;display:none;"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="tb"></span>Team members <span id="tcntm" style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px;"></span></div>
+      <div id="tlist2"></div>
+    </div>
+
+    <div class="card" style="margin-top:8px;">
+      <div class="ct"><span class="tb" style="background:#BA7517;"></span>Avaya Departments <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px;">shown in the department dropdown</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;">
+        <div style="flex:1;"><label class="fl">Department name</label><input type="text" id="new-dept" placeholder="e.g. Network Operations" onkeydown="if(event.key==='Enter')addListUI('dept')"/></div>
+        <button class="bp" onclick="addListUI('dept')">Add</button>
+      </div>
+      <div id="dept-err" style="font-size:11px;color:var(--danger);margin-bottom:8px;display:none;"></div>
+      <div id="dept-list"></div>
+    </div>
+
+    <div class="card" style="margin-top:8px;">
+      <div class="ct"><span class="tb" style="background:#1D9E75;"></span>Avaya Call Reasons <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px;">shown in the reason for call dropdown</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;">
+        <div style="flex:1;"><label class="fl">Reason</label><input type="text" id="new-reason" placeholder="e.g. Password Reset" onkeydown="if(event.key==='Enter')addListUI('reason')"/></div>
+        <button class="bp" onclick="addListUI('reason')">Add</button>
+      </div>
+      <div id="reason-err" style="font-size:11px;color:var(--danger);margin-bottom:8px;display:none;"></div>
+      <div id="reason-list"></div>
+    </div>
+
+  </div>
+
+  <!-- SETUP GUIDE -->
+  <div id="tab-4" style="display:none;">
+    <div class="card">
+      <div class="ct" style="font-size:16px;"><span class="tb"></span>Setup Guide &mdash; Already configured! (JSONBin.io)</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.8;">Everything runs inside your CBTS Microsoft 365 account &mdash; SharePoint stores the data, Power Automate is the API. Free with your existing M365 license. Do this setup once, then share the HTML file with your team.</p>
+
+      <div style="background:#fff3d6;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;font-size:12px;color:#7a4f00;margin-bottom:20px;">
+        <strong>Before you start</strong> &mdash; confirm you can open these two URLs on your laptop:<br/>
+        &bull; <a href="https://cbts.sharepoint.com" target="_blank" style="color:#7a4f00;">cbts.sharepoint.com</a> (SharePoint)<br/>
+        &bull; <a href="https://make.powerautomate.com" target="_blank" style="color:#7a4f00;">make.powerautomate.com</a> (Power Automate)
+      </div>
+
+      <div class="gs"><div class="gn">1</div><div style="font-size:13px;line-height:1.8;">
+        <strong>Create SharePoint Lists</strong><br/>
+        Go to your SharePoint site &rarr; click <strong>+ New &rarr; List</strong>. Create these 5 lists:<br/><br/>
+        <strong>List 1: TeamEntries</strong> &mdash; add these columns (all Single line of text unless noted):<br/>
+        &bull; EntryDate, Tech, TicketNo, OrderNo, OrderType, OrderRemarks<br/>
+        &bull; AvayaDept, AvayaReason, AvayaCaller, AvayaRemarks<br/><br/>
+        <strong>List 2: TechMembers</strong> &mdash; column: TechName<br/>
+        <strong>List 3: Remarks</strong> &mdash; columns: RemarkText, RemarkType, UsageCount (Number)<br/>
+        <strong>List 4: Departments</strong> &mdash; column: DeptName<br/>
+        <strong>List 5: CallReasons</strong> &mdash; column: ReasonName<br/>
+        Add default values to Departments and CallReasons lists manually.
+      </div></div>
+
+      <div class="gs"><div class="gn">2</div><div style="font-size:13px;line-height:1.8;">
+        <strong>Open Power Automate</strong><br/>
+        Go to <a href="https://make.powerautomate.com" target="_blank" style="color:var(--teal2);">make.powerautomate.com</a> and sign in with your CBTS Microsoft 365 account.
+      </div></div>
+
+      <div class="gs"><div class="gn">3</div><div style="font-size:13px;line-height:1.8;">
+        <strong>Create Flow 1 &mdash; Get Entries</strong><br/>
+        Click <strong>+ New flow &rarr; Instant cloud flow</strong>.<br/>
+        Trigger: <strong>When an HTTP request is received</strong> &rarr; Method: GET.<br/>
+        Add action: <strong>SharePoint &rarr; Get items</strong> &rarr; pick your site &rarr; List: <em>TeamEntries</em> &rarr; Top Count: 5000.<br/>
+        Add action: <strong>Response</strong> &rarr; Status: 200 &rarr; Body:<br/>
+        <code>{"entries": @{outputs('Get_items')?['body/value']}}</code><br/>
+        Headers: <code>Content-Type: application/json</code> and <code>Access-Control-Allow-Origin: *</code><br/>
+        Save. Copy the <strong>HTTP POST URL</strong> shown in the trigger &mdash; paste it into the dashboard HTML as <code>PA_GET_ENTRIES</code>.
+      </div></div>
+
+      <div class="gs"><div class="gn">4</div><div style="font-size:13px;line-height:1.8;">
+        <strong>Create Flow 2 &mdash; Add Entry</strong><br/>
+        Trigger: <strong>When an HTTP request is received</strong> &rarr; Method: POST.<br/>
+        Request body JSON schema (click "Use sample payload"):<br/>
+        <code>{"action":"addEntry","entry":{"date":"","tech":"","ticketNo":"","orderNo":"","orderType":"","orderRemarks":"","avayaDept":"","avayaReason":"","avayaCaller":"","avayaRemarks":""}}</code><br/>
+        Add action: <strong>SharePoint &rarr; Create item</strong> &rarr; List: <em>TeamEntries</em> &rarr; map each field from <code>triggerBody()?['entry']</code>.<br/>
+        Add action: <strong>Response</strong> &rarr; Body: <code>{"success":true,"id":@{outputs('Create_item')?['body/ID']}}</code><br/>
+        Save and copy the URL &rarr; paste as <code>PA_ADD_ENTRY</code>.
+      </div></div>
+
+      <div class="gs"><div class="gn">5</div><div style="font-size:13px;line-height:1.8;">
+        <strong>Create remaining flows (3 to 13) the same way</strong><br/>
+        Each flow follows the same pattern: HTTP trigger &rarr; SharePoint action &rarr; Response.<br/>
+        &bull; <strong>Flow 3 Delete Entry</strong>: SharePoint &rarr; Delete item &rarr; ID from <code>triggerBody()?['id']</code><br/>
+        &bull; <strong>Flows 4&ndash;6</strong>: Same pattern for TechMembers list (Get items / Create item / Delete item)<br/>
+        &bull; <strong>Flow 7</strong>: Get items from Remarks list, sorted by UsageCount<br/>
+        &bull; <strong>Flows 8&ndash;13</strong>: Same pattern for Departments and CallReasons lists<br/>
+        Copy each flow URL and paste into the matching variable in the dashboard HTML.
+      </div></div>
+
+      <div class="gs"><div class="gn">6</div><div style="font-size:13px;line-height:1.8;">
+        <strong>Paste all 13 Flow URLs into the dashboard</strong><br/>
+        Open <strong>cbts-team-dashboard.html</strong> in Notepad or VS Code.<br/>
+        Find the section at the top of the script that starts with <code>var PA_GET_ENTRIES = "";</code><br/>
+        Paste each copied URL between the quotes for the matching variable.<br/>
+        Save the file.
+      </div></div>
+
+      <div class="gs"><div class="gn">7</div><div style="font-size:13px;line-height:1.8;">
+        <strong>Share with your team</strong><br/>
+        Upload <strong>cbts-team-dashboard.html</strong> to a SharePoint document library or shared Teams channel.<br/>
+        Everyone opens the file in their browser &mdash; all data goes to the same SharePoint lists automatically.
+      </div></div>
+
+      <div class="tip">
+        <strong>Free with M365</strong> &mdash; SharePoint + Power Automate standard connectors are included in your CBTS Microsoft 365 license.<br/>
+        <strong>No Google needed</strong> &mdash; everything lives inside your CBTS tenant.<br/>
+        <strong>IT-friendly</strong> &mdash; no external services, no Azure registration required.<br/>
+        <strong>Data in SharePoint</strong> &mdash; managers can view all entries directly in the SharePoint list at any time.<br/>
+        <strong>Tip</strong> &mdash; if you get CORS errors when testing, add <code>Access-Control-Allow-Origin: *</code> to every Response action header.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+//  SUPABASE CONFIG (pre-filled, ready to use)
+// =============================================
+var SB_URL = "https://xfgtiokfqdxcyddmaduk.supabase.co";
+var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmZ3Rpb2tmcWR4Y3lkZG1hZHVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDA5MDgsImV4cCI6MjA5NTExNjkwOH0.QtGkOgrrSb6PNM_byQ8-lR8tf12a2cseeoL19qz8qLs";
+// =============================================
+
+var entries=[],techs=[],remarks=[],depts=[],reasons=[],delConf=null,techConf=null,deptConf=null,reasonConf=null;
+var remarkHideTimers={};
+
+function todayStr(){return new Date().toISOString().split("T")[0];}
+function fmtDate(d){return new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});}
+function monthLbl(m){return new Date(m+"-01").toLocaleDateString("en-GB",{month:"long",year:"numeric"});}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function gb(arr,k){return arr.reduce(function(a,e){a[e[k]]=a[e[k]]||[];a[e[k]].push(e);return a;},{});}
+
+function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.style.display="block";setTimeout(function(){t.style.display="none";},3500);}
+
+// ── Supabase helpers ──
+function sbFetch(path, method, body, cb){
+  var opts = {
+    method: method||"GET",
+    headers: sbHeaders(method==="POST"?{"Prefer":"return=representation"}:
+                       method==="DELETE"?{"Prefer":"return=minimal"}:null)
+  };
+  if(body) opts.body = JSON.stringify(body);
+  var controller = new AbortController();
+  var timer = setTimeout(function(){ controller.abort(); }, 10000);
+  opts.signal = controller.signal;
+  fetch(SB_URL+"/rest/v1/"+path, opts)
+    .then(function(r){
+      clearTimeout(timer);
+      if(r.status===204||r.status===201) return r.text().then(function(t){ return t?JSON.parse(t):[]; });
+      return r.json();
+    })
+    .then(function(d){ cb(d,null); })
+    .catch(function(e){ clearTimeout(timer); cb(null,e.message); });
+}
+
+// Compatibility api() wrapper
+function api(params,cb){
+  var action=params.action;
+  if(action==="getEntries"){
+    sbFetch("entries?select=*&order=created_at.desc&limit=5000","GET",null,function(d,e){
+      if(e||!Array.isArray(d)){cb({entries:[]},e);return;}
+      cb({entries:d.map(function(r){return{
+        id:r.id, date:r.entry_date, tech:r.tech,
+        ticketNo:r.ticket_no, orderNo:r.order_no,
+        orderType:r.order_type, orderRemarks:r.order_remarks,
+        avayaDept:r.avaya_dept, avayaReason:r.avaya_reason,
+        avayaCaller:r.avaya_caller, avayaRemarks:r.avaya_remarks
+      };})},null);
+    });
+  } else if(action==="getTechs"){
+    sbFetch("techs?select=name&order=name.asc","GET",null,function(d,e){
+      cb({techs:Array.isArray(d)?d.map(function(r){return r.name;}):[]},e);
+    });
+  } else if(action==="getRemarks"){
+    sbFetch("remarks?select=remark,type,usage_count&order=usage_count.desc","GET",null,function(d,e){
+      cb({remarks:Array.isArray(d)?d.map(function(r){return{remark:r.remark,type:r.type,count:r.usage_count};}):[]},e);
+    });
+  } else if(action==="getDepts"){
+    sbFetch("departments?select=name&order=name.asc","GET",null,function(d,e){
+      cb({items:Array.isArray(d)?d.map(function(r){return r.name;}):[]},e);
+    });
+  } else if(action==="getReasons"){
+    sbFetch("call_reasons?select=name&order=name.asc","GET",null,function(d,e){
+      cb({items:Array.isArray(d)?d.map(function(r){return r.name;}):[]},e);
+    });
+  }
+}
+
+// Compatibility apiPost() wrapper
+function apiPost(body,cb){
+  var action=body.action;
+  if(action==="addEntry"){
+    var e=body.entry;
+    var row={entry_date:e.date,tech:e.tech,ticket_no:e.ticketNo||"",
+      order_no:e.orderNo||"",order_type:e.orderType||"",order_remarks:e.orderRemarks||"",
+      avaya_dept:e.avayaDept||"",avaya_reason:e.avayaReason||"",
+      avaya_caller:e.avayaCaller||"",avaya_remarks:e.avayaRemarks||""};
+    sbFetch("entries","POST",row,function(d,err){
+      var id=Array.isArray(d)&&d[0]?d[0].id:Date.now();
+      if(e.orderRemarks) _saveRemark(e.orderRemarks,"order");
+      if(e.avayaRemarks) _saveRemark(e.avayaRemarks,"avaya");
+      cb({success:true,id:id},err);
+    });
+  } else if(action==="deleteEntry"){
+    sbFetch("entries?id=eq."+body.id,"DELETE",null,function(d,e){ cb({success:true},e); });
+  } else if(action==="addTech"){
+    sbFetch("techs","POST",{name:body.name},function(d,e){ cb({success:true},e); });
+  } else if(action==="deleteTech"){
+    sbFetch("techs?name=eq."+encodeURIComponent(body.name),"DELETE",null,function(d,e){ cb({success:true},e); });
+  } else if(action==="addDept"){
+    sbFetch("departments","POST",{name:body.name},function(d,e){ cb({success:true},e); });
+  } else if(action==="deleteDept"){
+    sbFetch("departments?name=eq."+encodeURIComponent(body.name),"DELETE",null,function(d,e){ cb({success:true},e); });
+  } else if(action==="addReason"){
+    sbFetch("call_reasons","POST",{name:body.name},function(d,e){ cb({success:true},e); });
+  } else if(action==="deleteReason"){
+    sbFetch("call_reasons?name=eq."+encodeURIComponent(body.name),"DELETE",null,function(d,e){ cb({success:true},e); });
+  }
+}
+
+function _saveRemark(remark,type){
+  // Try increment first, insert if not exists
+  sbFetch("remarks?remark=eq."+encodeURIComponent(remark)+"&type=eq."+encodeURIComponent(type),"GET",null,function(d,e){
+    if(Array.isArray(d)&&d.length>0){
+      var newCount=(d[0].usage_count||1)+1;
+      sbFetch("remarks?id=eq."+d[0].id,"PATCH",{usage_count:newCount},function(){});
+    } else {
+      sbFetch("remarks","POST",{remark:remark,type:type,usage_count:1},function(){});
+    }
+  });
+}
+
+function _saveRemark(db, remark, type){
+  db.remarks = db.remarks||[];
+  var found = false;
+  for(var i=0;i<db.remarks.length;i++){
+    if(db.remarks[i].remark===remark && db.remarks[i].type===type){
+      db.remarks[i].count = (db.remarks[i].count||1)+1;
+      found = true; break;
+    }
+  }
+  if(!found) db.remarks.push({remark:remark, type:type, count:1});
+}
+
+function hideLoader(){var l=document.getElementById("lov");l.classList.add("hide");setTimeout(function(){l.style.display="none";},350);}
+
+function loadAll(){
+  document.getElementById("lmsg").textContent="Loading...";
+  var done=0, total=5;
+  function check(){ done++; if(done>=total){ hideLoader(); document.getElementById("sstat").textContent="Synced "+new Date().toLocaleTimeString(); refreshAll(); } }
+  api({action:"getEntries"},function(d,e){ if(d&&!e) entries=d.entries||[]; check(); });
+  api({action:"getTechs"},  function(d,e){ if(d&&!e) techs=d.techs||[];     check(); });
+  api({action:"getRemarks"},function(d,e){ if(d&&!e) remarks=d.remarks||[]; check(); });
+  api({action:"getDepts"},  function(d,e){ if(d&&!e) depts=d.items||[];     check(); });
+  api({action:"getReasons"},function(d,e){ if(d&&!e) reasons=d.items||[];   check(); });
+}
+
+// ── Toggle buttons (order type) ──
+function selectToggle(groupId,btn,val){
+  var group=document.getElementById(groupId);
+  group.querySelectorAll(".tgl").forEach(function(b){b.classList.remove("sel");});
+  btn.classList.add("sel");
+  if(groupId==="order-type-group") document.getElementById("f-order-type").value=val;
+}
+
+// ── Remarks autocomplete ──
+function getFilteredRemarks(type,query){
+  return remarks.filter(function(r){
+    return r.type===type && (!query || r.remark.toLowerCase().indexOf(query.toLowerCase())!==-1);
+  }).slice(0,8);
+}
+function showRemarks(type){
+  clearTimeout(remarkHideTimers[type]);
+  var query=document.getElementById("f-"+type+"-remarks").value;
+  renderRemarkSuggestions(type,query);
+}
+function hideRemarks(type){
+  remarkHideTimers[type]=setTimeout(function(){
+    document.getElementById("rmk-"+type).classList.remove("open");
+  },200);
+}
+function filterRemarks(type){
+  var query=document.getElementById("f-"+type+"-remarks").value;
+  renderRemarkSuggestions(type,query);
+}
+function renderRemarkSuggestions(type,query){
+  var list=getFilteredRemarks(type,query);
+  var el=document.getElementById("rmk-"+type);
+  if(!list.length){el.classList.remove("open");return;}
+  el.innerHTML=list.map(function(r){
+    return'<div class="rmk-item" onmousedown="pickRemark(\''+type+'\',\''+esc(r.remark)+'\')">'
+      +'<span>'+esc(r.remark)+'</span><span class="rmk-count">x'+r.count+'</span></div>';
+  }).join("");
+  el.classList.add("open");
+}
+function pickRemark(type,val){
+  document.getElementById("f-"+type+"-remarks").value=val;
+  document.getElementById("rmk-"+type).classList.remove("open");
+}
+
+// ── Add entry ──
+function addEntry(){
+  var date  =document.getElementById("f-date").value;
+  var tech  =document.getElementById("f-tech").value;
+  var tic   =document.getElementById("f-ticket").value.trim();
+  var ord   =document.getElementById("f-order").value.trim();
+  var oType =document.getElementById("f-order-type").value;
+  var oRmk  =document.getElementById("f-order-remarks").value.trim();
+  var av    =document.getElementById("f-avaya").value.trim();
+  var avDept=document.getElementById("f-avaya-dept").value;
+  var avRsn =document.getElementById("f-avaya-reason").value;
+  var avRmk =document.getElementById("f-avaya-remarks").value.trim();
+  if(!tic&&!ord&&!av){toast("Enter at least one of Ticket, Order No, or Avaya Caller");return;}
+  var btn=document.getElementById("btn-add");btn.disabled=true;btn.textContent="Saving...";
+  var entry={date:date,tech:tech,ticketNo:tic,orderNo:ord,orderType:oType,orderRemarks:oRmk,avayaCaller:av,avayaDept:avDept,avayaReason:avRsn,avayaRemarks:avRmk};
+  apiPost({action:"addEntry",entry:entry},function(d,err){
+    btn.disabled=false;btn.textContent="Add Entry";
+    if(err||!d||d.error){toast("Error saving: "+(err||(d&&d.error)));return;}
+    entries.push(Object.assign({id:d.id},entry));
+    // update local remarks memory immediately
+    if(oRmk&&!remarks.find(function(r){return r.remark===oRmk&&r.type==="order";})) remarks.push({remark:oRmk,type:"order",count:1});
+    if(avRmk&&!remarks.find(function(r){return r.remark===avRmk&&r.type==="avaya";})) remarks.push({remark:avRmk,type:"avaya",count:1});
+    // clear fields
+    document.getElementById("f-ticket").value="";
+    document.getElementById("f-order").value="";
+    document.getElementById("f-order-type").value="";
+    document.getElementById("f-order-remarks").value="";
+    document.getElementById("f-avaya").value="";
+    document.getElementById("f-avaya-dept").value="";
+    document.getElementById("f-avaya-reason").value="";
+    document.getElementById("f-avaya-remarks").value="";
+    document.querySelectorAll("#order-type-group .tgl").forEach(function(b){b.classList.remove("sel");});
+    var m=document.getElementById("smsg");m.style.display="inline";
+    setTimeout(function(){m.style.display="none";},2500);
+    refreshAll();
+  });
+}
+
+function confirmDel(id){delConf=id;renderToday();renderDaily();}
+function cancelDel(){delConf=null;renderToday();renderDaily();}
+function doDelEntry(id){
+  apiPost({action:"deleteEntry",id:id},function(d,err){
+    if(err||!d||d.error){toast("Error deleting");return;}
+    entries=entries.filter(function(e){return String(e.id)!==String(id);});
+    delConf=null;refreshAll();
+  });
+}
+function addTech(){
+  var n=document.getElementById("new-tech").value.trim();
+  var er=document.getElementById("terr");
+  if(!n)return;
+  if(techs.indexOf(n)!==-1){er.textContent="Name already exists.";er.style.display="block";return;}
+  er.style.display="none";
+  apiPost({action:"addTech",name:n},function(d,err){
+    if(err||!d||d.error){toast("Error adding member");return;}
+    techs.push(n);document.getElementById("new-tech").value="";refreshAll();
+  });
+}
+function confirmTechDel(name){techConf=name;renderTeam();}
+function cancelTechDel(){techConf=null;renderTeam();}
+function doDelTech(name){
+  apiPost({action:"deleteTech",name:name},function(d,err){
+    if(err||!d||d.error){toast("Error removing member");return;}
+    techs=techs.filter(function(t){return t!==name;});techConf=null;refreshAll();
+  });
+}
+
+function refreshAll(){buildSelect();buildDeptSelect();buildReasonSelect();renderToday();renderDaily();renderMonthly();renderTeam();renderDeptList();renderReasonList();}
+function buildSelect(){
+  var s=document.getElementById("f-tech"),cur=s.value;
+  s.innerHTML=techs.map(function(n){return'<option value="'+esc(n)+'"'+(n===cur?' selected':'')+'>'+esc(n)+'</option>';}).join("");
+}
+
+function entryHTML(data){
+  if(!data.length)return'<div class="empty">No entries.</div>';
+  return'<div class="tw"><table><thead><tr><th>Date</th><th>Tech</th><th>Ticket</th><th>Order No</th><th>Order Type</th><th>Order Remarks</th><th>Avaya Caller</th><th>Dept</th><th>Reason</th><th>Avaya Remarks</th><th></th></tr></thead><tbody>'
+    +data.map(function(e){
+      var act=delConf===e.id
+        ?'<span style="display:flex;gap:4px;align-items:center;white-space:nowrap;"><span style="font-size:10px;color:var(--muted);">Remove?</span><button class="bdsm" onclick="doDelEntry('+e.id+')">Yes</button><button class="bsm" onclick="cancelDel()">No</button></span>'
+        :'<button class="bsm" onclick="confirmDel('+e.id+')">x</button>';
+      var oType=e.orderType==="Manually Distributed"?'<span class="ba bam">Manual</span>':e.orderType==="Systematically Pushed"?'<span class="ba bas">Systematic</span>':'<span class="dm">-</span>';
+      return'<tr>'
+        +'<td>'+fmtDate(e.date)+'</td>'
+        +'<td style="font-weight:500;">'+esc(e.tech)+'</td>'
+        +'<td>'+(e.ticketNo?'<span class="ba bak">'+esc(e.ticketNo)+'</span>':'<span class="dm">-</span>')+'</td>'
+        +'<td>'+(e.orderNo?'<span class="ba bao">'+esc(e.orderNo)+'</span>':'<span class="dm">-</span>')+'</td>'
+        +'<td>'+oType+'</td>'
+        +'<td class="rmk-cell" title="'+esc(e.orderRemarks)+'">'+(e.orderRemarks?esc(e.orderRemarks):'<span class="dm">-</span>')+'</td>'
+        +'<td>'+(e.avayaCaller?'<span class="ba bav">'+esc(e.avayaCaller)+'</span>':'<span class="dm">-</span>')+'</td>'
+        +'<td>'+(e.avayaDept?'<span class="ba" style="background:#f0f4f8;color:var(--muted);">'+esc(e.avayaDept)+'</span>':'<span class="dm">-</span>')+'</td>'
+        +'<td class="rmk-cell" title="'+esc(e.avayaReason)+'">'+(e.avayaReason?esc(e.avayaReason):'<span class="dm">-</span>')+'</td>'
+        +'<td class="rmk-cell" title="'+esc(e.avayaRemarks)+'">'+(e.avayaRemarks?esc(e.avayaRemarks):'<span class="dm">-</span>')+'</td>'
+        +'<td>'+act+'</td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
+
+function summaryHTML(data){
+  var bt=gb(data,"tech"),tl=Object.keys(bt);
+  if(!tl.length)return'<div class="empty">No entries for this period.</div>';
+  return'<div class="tw"><table><thead><tr><th>Tech Name</th><th>Tickets</th><th>Orders</th><th>Manual</th><th>Systematic</th><th>Avaya Calls</th></tr></thead><tbody>'
+    +tl.map(function(t){var r=bt[t];return'<tr>'
+      +'<td style="font-weight:600;">'+esc(t)+'</td>'
+      +'<td><span class="ba bak">'+r.filter(function(x){return x.ticketNo;}).length+'</span></td>'
+      +'<td><span class="ba bao">'+r.filter(function(x){return x.orderNo;}).length+'</span></td>'
+      +'<td><span class="ba bam">'+r.filter(function(x){return x.orderType==="Manually Distributed";}).length+'</span></td>'
+      +'<td><span class="ba bas">'+r.filter(function(x){return x.orderType==="Systematically Pushed";}).length+'</span></td>'
+      +'<td><span class="ba bav">'+r.filter(function(x){return x.avayaCaller;}).length+'</span></td>'
+      +'</tr>';}).join("")
+    +'</tbody><tfoot><tr class="tfr">'
+    +'<td>Total</td>'
+    +'<td>'+data.filter(function(r){return r.ticketNo;}).length+'</td>'
+    +'<td>'+data.filter(function(r){return r.orderNo;}).length+'</td>'
+    +'<td>'+data.filter(function(r){return r.orderType==="Manually Distributed";}).length+'</td>'
+    +'<td>'+data.filter(function(r){return r.orderType==="Systematically Pushed";}).length+'</td>'
+    +'<td>'+data.filter(function(r){return r.avayaCaller;}).length+'</td>'
+    +'</tr></tfoot></table></div>';
+}
+
+function statsHTML(data){
+  var t=data.filter(function(e){return e.ticketNo;}).length;
+  var o=data.filter(function(e){return e.orderNo;}).length;
+  var a=data.filter(function(e){return e.avayaCaller;}).length;
+  return[["Tickets",t,""],["Orders",o,""],["Avaya Calls",a,""],["Total Entries",data.length,"wh"]]
+    .map(function(x){return'<div class="sc"><div class="sl">'+x[0]+'</div><div class="sv '+x[2]+'">'+x[1]+'</div></div>';}).join("");
+}
+
+function renderToday(){
+  var d=todayStr(),data=entries.filter(function(e){return e.date===d;});
+  document.getElementById("tcnt").textContent=data.length+" logged";
+  document.getElementById("tlist").innerHTML=entryHTML(data);
+}
+function renderDaily(){
+  var d=document.getElementById("v-date").value||todayStr();
+  var data=entries.filter(function(e){return e.date===d;});
+  document.getElementById("dlbl").textContent="Showing: "+fmtDate(d);
+  document.getElementById("dstats").innerHTML=statsHTML(data);
+  document.getElementById("dsum").innerHTML=summaryHTML(data);
+  document.getElementById("dent").innerHTML=entryHTML(data);
+}
+function renderMonthly(){
+  var m=document.getElementById("v-month").value||todayStr().slice(0,7);
+  var data=entries.filter(function(e){return e.date.indexOf(m)===0;});
+  document.getElementById("mlbl").textContent="Showing: "+monthLbl(m);
+  document.getElementById("mstats").innerHTML=statsHTML(data);
+  document.getElementById("msum").innerHTML=summaryHTML(data);
+  var bd=gb(data,"date"),dates=Object.keys(bd).sort().reverse();
+  document.getElementById("mbkd").innerHTML=dates.length
+    ?dates.map(function(d){var bt2=gb(bd[d],"tech");
+        return'<div class="bkd">'+fmtDate(d)+'</div><div class="pr">'+Object.keys(bt2).map(function(tech){var r=bt2[tech];
+          return'<span class="pill">'+esc(tech)+' &middot; '+r.filter(function(x){return x.ticketNo;}).length+'T &middot; '+r.filter(function(x){return x.orderNo;}).length+'O &middot; '+r.filter(function(x){return x.avayaCaller;}).length+'A</span>';
+        }).join("")+'</div>';}).join("")
+    :'<div class="empty">No entries this month.</div>';
+}
+function renderTeam(){
+  document.getElementById("tcntm").textContent=techs.length+" members";
+  var el=document.getElementById("tlist2");
+  if(!techs.length){el.innerHTML='<div class="empty">No team members yet.</div>';return;}
+  el.innerHTML=techs.map(function(name){
+    var cnt=entries.filter(function(e){return e.tech===name;}).length;
+    var ini=name.split(" ").map(function(w){return w[0]||"";}).join("").slice(0,2).toUpperCase();
+    var act=techConf===name
+      ?'<div style="display:flex;gap:6px;align-items:center;"><span style="font-size:11px;color:var(--muted);">Remove?</span><button class="bdsm" onclick="doDelTech(\''+esc(name)+'\')">Yes</button><button class="bsm" onclick="cancelTechDel()">No</button></div>'
+      :'<button class="bsm" onclick="confirmTechDel(\''+esc(name)+'\')">Remove</button>';
+    return'<div class="mr"><div class="av2">'+ini+'</div><div class="mi"><div class="mn">'+esc(name)+'</div><div class="mm">'+cnt+' entries total</div></div>'+act+'</div>';
+  }).join("");
+}
+
+
+// ── Build dept select ──
+function buildDeptSelect(){
+  var s=document.getElementById("f-avaya-dept");
+  var cur=s.value;
+  s.innerHTML='<option value="">-- Select department --</option>'
+    +depts.map(function(n){return'<option value="'+esc(n)+'"'+(n===cur?' selected':'')+'>'+esc(n)+'</option>';}).join("");
+}
+// ── Build reason select ──
+function buildReasonSelect(){
+  var s=document.getElementById("f-avaya-reason");
+  var cur=s.value;
+  s.innerHTML='<option value="">-- Select reason --</option>'
+    +reasons.map(function(n){return'<option value="'+esc(n)+'"'+(n===cur?' selected':'')+'>'+esc(n)+'</option>';}).join("");
+}
+
+// ── Generic list UI (dept + reason) ──
+function addListUI(type){
+  var inputId=type==="dept"?"new-dept":"new-reason";
+  var errId  =type==="dept"?"dept-err":"reason-err";
+  var action =type==="dept"?"addDept":"addReason";
+  var list   =type==="dept"?depts:reasons;
+  var n=document.getElementById(inputId).value.trim();
+  var er=document.getElementById(errId);
+  if(!n)return;
+  if(list.indexOf(n)!==-1){er.textContent="Already exists.";er.style.display="block";return;}
+  er.style.display="none";
+  apiPost({action:action,name:n},function(d,err){
+    if(err||!d||d.error){toast("Error adding item");return;}
+    if(type==="dept") depts.push(n); else reasons.push(n);
+    document.getElementById(inputId).value="";
+    refreshAll();
+  });
+}
+function confirmListDel(type,name){
+  if(type==="dept") deptConf=name; else reasonConf=name;
+  if(type==="dept") renderDeptList(); else renderReasonList();
+}
+function cancelListDel(type){
+  if(type==="dept") deptConf=null; else reasonConf=null;
+  if(type==="dept") renderDeptList(); else renderReasonList();
+}
+function doDelList(type,name){
+  var action=type==="dept"?"deleteDept":"deleteReason";
+  apiPost({action:action,name:name},function(d,err){
+    if(err||!d||d.error){toast("Error removing item");return;}
+    if(type==="dept"){depts=depts.filter(function(x){return x!==name;});deptConf=null;}
+    else{reasons=reasons.filter(function(x){return x!==name;});reasonConf=null;}
+    refreshAll();
+  });
+}
+function renderListItems(type,list,conf,containerId){
+  var el=document.getElementById(containerId);
+  if(!list.length){el.innerHTML='<div class="empty">No items yet. Add one above.</div>';return;}
+  var color=type==="dept"?"#BA7517":"#1D9E75";
+  var dotBg=type==="dept"?"#fff3d6":"var(--teal3)";
+  var dotTxt=type==="dept"?"#7a4f00":"#085041";
+  el.innerHTML=list.map(function(name){
+    var act=conf===name
+      ?'<div style="display:flex;gap:6px;align-items:center;"><span style="font-size:11px;color:var(--muted);">Remove?</span><button class="bdsm" onclick="doDelList(''+type+'',''+esc(name)+'')">Yes</button><button class="bsm" onclick="cancelListDel(''+type+'')">No</button></div>'
+      :'<button class="bsm" onclick="confirmListDel(''+type+'',''+esc(name)+'')">Remove</button>';
+    return'<div class="mr"><div style="width:34px;height:34px;border-radius:50%;background:'+dotBg+';display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:14px;color:'+dotTxt+';">&#9679;</span></div>'
+      +'<div class="mi"><div class="mn">'+esc(name)+'</div></div>'+act+'</div>';
+  }).join("");
+}
+function renderDeptList(){ renderListItems("dept",depts,deptConf,"dept-list"); }
+function renderReasonList(){ renderListItems("reason",reasons,reasonConf,"reason-list"); }
+
+function exportExcel(scope){
+  var m=document.getElementById("v-month").value||todayStr().slice(0,7);
+  var d=document.getElementById("v-date").value||todayStr();
+  var data=scope==="daily"?entries.filter(function(e){return e.date===d;}):entries.filter(function(e){return e.date.indexOf(m)===0;});
+  var label=scope==="daily"?d:m;
+  var wb=XLSX.utils.book_new();
+  function as(rows,name){XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows.length?rows:[{Note:"No data"}]),name);}
+  as(data.filter(function(e){return e.ticketNo;}).map(function(e){return{Date:e.date,Tech:e.tech,"Ticket No":e.ticketNo};}),"Tickets Worked");
+  as(data.filter(function(e){return e.orderNo;}).map(function(e){return{Date:e.date,Tech:e.tech,"Order No":e.orderNo,"Order Type":e.orderType||"","Remarks":e.orderRemarks||""};}),"Orders Worked");
+  as(data.filter(function(e){return e.avayaCaller;}).map(function(e){return{Date:e.date,Tech:e.tech,"Caller Name":e.avayaCaller,"Department":e.avayaDept||"","Reason":e.avayaReason||"","Remarks":e.avayaRemarks||""};}),"Avaya Calls");
+  XLSX.writeFile(wb,"cbts_team_status_"+label+".xlsx");
+}
+
+function setTab(i,btn){
+  for(var x=0;x<5;x++) document.getElementById("tab-"+x).style.display=x===i?"block":"none";
+  document.querySelectorAll(".tbtn").forEach(function(b,idx){b.classList.toggle("active",idx===i);});
+}
+window.onload=function(){
+  document.getElementById("f-date").value=todayStr();
+  document.getElementById("v-date").value=todayStr();
+  document.getElementById("v-month").value=todayStr().slice(0,7);
+  loadAll();
+  setInterval(loadAll,20000);
+};
+</script>
+</body>
+</html>
