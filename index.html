@@ -110,16 +110,34 @@ tbody td{padding:8px 10px;color:var(--text);}
 
   <!-- LOG ENTRY -->
   <div id="tab-0">
+
+    <!-- Common: Date + Tech -->
     <div class="card">
-      <div class="ct"><span class="tbar" style="background:var(--teal);"></span>Add work entry</div>
+      <div class="ct"><span class="tbar" style="background:var(--teal);"></span>Select Date &amp; Tech</div>
       <div class="fg2">
         <div><label class="fl">Date</label><input type="date" id="f-date"/></div>
         <div><label class="fl">Tech Name</label><select id="f-tech"></select></div>
       </div>
-      <!-- Ticket -->
-      <div class="fsec">
-        <div class="fsec-title" style="color:var(--teal2);">Ticket</div>
-        <div class="fg2" style="margin-bottom:0;">
+    </div>
+
+    <!-- 3 entry buttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+      <button onclick="openForm('ticket')" style="background:var(--navy2);color:var(--teal);border:2px solid var(--teal);border-radius:12px;padding:16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:24px;">&#128196;</span>Add Ticket
+      </button>
+      <button onclick="openForm('order')" style="background:var(--navy2);color:#1D9E75;border:2px solid #1D9E75;border-radius:12px;padding:16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:24px;">&#128230;</span>Add Order
+      </button>
+      <button onclick="openForm('avaya')" style="background:var(--navy2);color:#BA7517;border:2px solid #BA7517;border-radius:12px;padding:16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:24px;">&#128222;</span>Add Avaya Call
+      </button>
+    </div>
+
+    <!-- TICKET FORM -->
+    <div id="form-ticket" style="display:none;">
+      <div class="card" style="border-top:3px solid var(--teal);">
+        <div class="ct"><span class="tbar" style="background:var(--teal);"></span>Add Ticket Entry</div>
+        <div class="fg2">
           <div><label class="fl">Ticket No</label><input type="text" id="f-ticket" placeholder="TKT-001"/></div>
           <div><label class="fl">Core Ticket</label>
             <div class="tgl-group" id="core-tkt-grp">
@@ -129,10 +147,18 @@ tbody td{padding:8px 10px;color:var(--text);}
             <input type="hidden" id="f-core-ticket" value="No"/>
           </div>
         </div>
+        <div style="display:flex;gap:10px;">
+          <button class="bp" id="btn-add-ticket" onclick="addTicketEntry()">Save Ticket</button>
+          <button class="bsm" style="padding:8px 16px;" onclick="closeForm('ticket')">Cancel</button>
+          <span id="smsg-ticket" style="font-size:12px;color:var(--teal2);font-weight:600;display:none;">&#10003; Saved!</span>
+        </div>
       </div>
-      <!-- Order -->
-      <div class="fsec">
-        <div class="fsec-title" style="color:#1D9E75;">OWM Order</div>
+    </div>
+
+    <!-- ORDER FORM -->
+    <div id="form-order" style="display:none;">
+      <div class="card" style="border-top:3px solid #1D9E75;">
+        <div class="ct"><span class="tbar" style="background:#1D9E75;"></span>Add OWM Order Entry</div>
         <div class="fg3">
           <div><label class="fl">Order No</label><input type="text" id="f-order" placeholder="ORD-002"/></div>
           <div><label class="fl">Due Date</label><input type="date" id="f-due-date"/></div>
@@ -143,7 +169,7 @@ tbody td{padding:8px 10px;color:var(--text);}
             </select>
           </div>
         </div>
-        <div style="margin-bottom:10px;">
+        <div style="margin-bottom:12px;">
           <label class="fl">Action Taken</label>
           <div class="tgl-group" id="action-grp">
             <button class="tgl" onclick="togSel('action-grp',this,'Manually Distributed','f-action')">Manually Distributed</button>
@@ -151,22 +177,30 @@ tbody td{padding:8px 10px;color:var(--text);}
           </div>
           <input type="hidden" id="f-action" value=""/>
         </div>
-        <div style="position:relative;">
+        <div style="position:relative;margin-bottom:16px;">
           <label class="fl">Order Remarks</label>
           <textarea id="f-order-rmk" placeholder="Remarks..." oninput="showRmk('order')" onfocus="showRmk('order')" onblur="hideRmk('order')" rows="2"></textarea>
           <div class="rmk-drop" id="rmk-order" style="display:none;"></div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;">Previously used remarks appear as suggestions</div>
         </div>
+        <div style="display:flex;gap:10px;">
+          <button class="bp" id="btn-add-order" onclick="addOrderEntry()">Save Order</button>
+          <button class="bsm" style="padding:8px 16px;" onclick="closeForm('order')">Cancel</button>
+          <span id="smsg-order" style="font-size:12px;color:var(--teal2);font-weight:600;display:none;">&#10003; Saved!</span>
+        </div>
       </div>
-      <!-- Avaya -->
-      <div class="fsec">
-        <div class="fsec-title" style="color:#BA7517;">Avaya Call</div>
-        <div class="fg3" style="margin-bottom:10px;">
+    </div>
+
+    <!-- AVAYA FORM -->
+    <div id="form-avaya" style="display:none;">
+      <div class="card" style="border-top:3px solid #BA7517;">
+        <div class="ct"><span class="tbar" style="background:#BA7517;"></span>Add Avaya Call Entry</div>
+        <div class="fg3" style="margin-bottom:12px;">
           <div><label class="fl">Caller Name</label><input type="text" id="f-avaya" placeholder="Caller name"/></div>
           <div><label class="fl">Department</label><select id="f-avaya-dept"><option value="">-- Select --</option></select></div>
           <div><label class="fl">Reason for Call</label><select id="f-avaya-reason"><option value="">-- Select --</option></select></div>
         </div>
-        <div class="fg2" style="margin-bottom:10px;">
+        <div class="fg2" style="margin-bottom:12px;">
           <div><label class="fl">Having Task#</label>
             <div class="tgl-group" id="has-task-grp">
               <button class="tgl" onclick="togSel('has-task-grp',this,'Yes','f-has-task');document.getElementById('task-no-wrap').style.display='block'">Yes</button>
@@ -176,17 +210,20 @@ tbody td{padding:8px 10px;color:var(--text);}
           </div>
           <div id="task-no-wrap" style="display:none;"><label class="fl">Task#</label><input type="text" id="f-task-no" placeholder="Task number"/></div>
         </div>
-        <div style="position:relative;">
+        <div style="position:relative;margin-bottom:16px;">
           <label class="fl">Avaya Remarks</label>
           <textarea id="f-avaya-rmk" placeholder="Remarks..." oninput="showRmk('avaya')" onfocus="showRmk('avaya')" onblur="hideRmk('avaya')" rows="2"></textarea>
           <div class="rmk-drop" id="rmk-avaya" style="display:none;"></div>
         </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;margin-top:4px;">
-        <button class="bp" id="btn-add" onclick="addEntry()">Add Entry</button>
-        <span id="smsg" style="font-size:12px;color:var(--teal2);font-weight:600;display:none;">&#10003; Saved &amp; shared with team</span>
+        <div style="display:flex;gap:10px;">
+          <button class="bp" id="btn-add-avaya" onclick="addAvayaEntry()">Save Avaya Call</button>
+          <button class="bsm" style="padding:8px 16px;" onclick="closeForm('avaya')">Cancel</button>
+          <span id="smsg-avaya" style="font-size:12px;color:var(--teal2);font-weight:600;display:none;">&#10003; Saved!</span>
+        </div>
       </div>
     </div>
+
+    <!-- Today's entries -->
     <div class="card">
       <div class="ct"><span class="tbar" style="background:var(--teal);"></span>Today's entries <span id="tcnt" style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px;"></span></div>
       <div id="tlist"></div>
@@ -380,55 +417,101 @@ function showRmk(type){
 function hideRmk(type){ rmkTimers[type]=setTimeout(function(){document.getElementById("rmk-"+type).style.display="none";},200); }
 function pickRmk(type,val){ document.getElementById(type==="order"?"f-order-rmk":"f-avaya-rmk").value=val; document.getElementById("rmk-"+type).style.display="none"; }
 
-function addEntry(){
-  var date  = document.getElementById("f-date").value;
-  var tech  = document.getElementById("f-tech").value;
-  var tic   = document.getElementById("f-ticket").value.trim();
-  var core  = document.getElementById("f-core-ticket").value;
-  var ord   = document.getElementById("f-order").value.trim();
-  var due   = document.getElementById("f-due-date").value;
-  var oType = document.getElementById("f-order-type").value;
-  var action= document.getElementById("f-action").value;
-  var oRmk  = document.getElementById("f-order-rmk").value.trim();
-  var av    = document.getElementById("f-avaya").value.trim();
-  var dept  = document.getElementById("f-avaya-dept").value;
-  var reason= document.getElementById("f-avaya-reason").value;
-  var hasTask=document.getElementById("f-has-task").value;
-  var taskNo= document.getElementById("f-task-no").value.trim();
-  var aRmk  = document.getElementById("f-avaya-rmk").value.trim();
+function openForm(type){
+  ["ticket","order","avaya"].forEach(function(t){
+    document.getElementById("form-"+t).style.display = t===type ? "block" : "none";
+  });
+  // Scroll to form
+  document.getElementById("form-"+type).scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeForm(type){
+  document.getElementById("form-"+type).style.display="none";
+}
 
-  if(!tic&&!ord&&!av){toast("Enter at least one of Ticket, Order, or Avaya Caller","#e03d3d");return;}
+function showSaved(type){
+  var m=document.getElementById("smsg-"+type); m.style.display="inline";
+  setTimeout(function(){m.style.display="none";},2500);
+}
 
-  var btn=document.getElementById("btn-add"); btn.disabled=true; btn.textContent="Saving...";
-
+function addTicketEntry(){
+  var date=document.getElementById("f-date").value;
+  var tech=document.getElementById("f-tech").value;
+  var tic=document.getElementById("f-ticket").value.trim();
+  var core=document.getElementById("f-core-ticket").value;
+  if(!tic){toast("Please enter a Ticket No","#e03d3d");return;}
+  if(!tech){toast("Please select a Tech Name","#e03d3d");return;}
+  var btn=document.getElementById("btn-add-ticket"); btn.disabled=true; btn.textContent="Saving...";
   var entry={id:Date.now(),date:date,tech:tech,ticketNo:tic,coreTicket:core,
-    orderNo:ord,orderDueDate:due,orderType:oType,actionTaken:action,orderRemarks:oRmk,
-    avayaCaller:av,avayaDept:dept,avayaReason:reason,avayaHasTask:hasTask,avayaTaskNo:taskNo,avayaRemarks:aRmk};
+    orderNo:"",orderDueDate:"",orderType:"",actionTaken:"",orderRemarks:"",
+    avayaCaller:"",avayaDept:"",avayaReason:"",avayaHasTask:"No",avayaTaskNo:"",avayaRemarks:""};
+  db.entries.push(entry);
+  saveDB(function(){
+    btn.disabled=false; btn.textContent="Save Ticket";
+    document.getElementById("f-ticket").value="";
+    document.getElementById("f-core-ticket").value="No";
+    document.getElementById("core-tkt-grp").querySelectorAll(".tgl").forEach(function(b,i){b.classList.toggle("sel",i===1);});
+    showSaved("ticket");
+    refreshAll();
+  });
+}
 
+function addOrderEntry(){
+  var date=document.getElementById("f-date").value;
+  var tech=document.getElementById("f-tech").value;
+  var ord=document.getElementById("f-order").value.trim();
+  var due=document.getElementById("f-due-date").value;
+  var oType=document.getElementById("f-order-type").value;
+  var action=document.getElementById("f-action").value;
+  var oRmk=document.getElementById("f-order-rmk").value.trim();
+  if(!ord){toast("Please enter an Order No","#e03d3d");return;}
+  if(!tech){toast("Please select a Tech Name","#e03d3d");return;}
+  var btn=document.getElementById("btn-add-order"); btn.disabled=true; btn.textContent="Saving...";
+  var entry={id:Date.now(),date:date,tech:tech,ticketNo:"",coreTicket:"No",
+    orderNo:ord,orderDueDate:due,orderType:oType,actionTaken:action,orderRemarks:oRmk,
+    avayaCaller:"",avayaDept:"",avayaReason:"",avayaHasTask:"No",avayaTaskNo:"",avayaRemarks:""};
   db.entries.push(entry);
   if(oRmk) saveRmkLocal(oRmk,"order");
-  if(aRmk) saveRmkLocal(aRmk,"avaya");
-
   saveDB(function(){
-    btn.disabled=false; btn.textContent="Add Entry";
-    document.getElementById("f-ticket").value="";
+    btn.disabled=false; btn.textContent="Save Order";
     document.getElementById("f-order").value="";
     document.getElementById("f-due-date").value="";
     document.getElementById("f-order-type").value="";
     document.getElementById("f-order-rmk").value="";
+    document.getElementById("f-action").value="";
+    document.getElementById("action-grp").querySelectorAll(".tgl").forEach(function(b){b.classList.remove("sel");});
+    showSaved("order");
+    refreshAll();
+  });
+}
+
+function addAvayaEntry(){
+  var date=document.getElementById("f-date").value;
+  var tech=document.getElementById("f-tech").value;
+  var av=document.getElementById("f-avaya").value.trim();
+  var dept=document.getElementById("f-avaya-dept").value;
+  var reason=document.getElementById("f-avaya-reason").value;
+  var hasTask=document.getElementById("f-has-task").value;
+  var taskNo=document.getElementById("f-task-no").value.trim();
+  var aRmk=document.getElementById("f-avaya-rmk").value.trim();
+  if(!av){toast("Please enter a Caller Name","#e03d3d");return;}
+  if(!tech){toast("Please select a Tech Name","#e03d3d");return;}
+  var btn=document.getElementById("btn-add-avaya"); btn.disabled=true; btn.textContent="Saving...";
+  var entry={id:Date.now(),date:date,tech:tech,ticketNo:"",coreTicket:"No",
+    orderNo:"",orderDueDate:"",orderType:"",actionTaken:"",orderRemarks:"",
+    avayaCaller:av,avayaDept:dept,avayaReason:reason,avayaHasTask:hasTask,avayaTaskNo:taskNo,avayaRemarks:aRmk};
+  db.entries.push(entry);
+  if(aRmk) saveRmkLocal(aRmk,"avaya");
+  saveDB(function(){
+    btn.disabled=false; btn.textContent="Save Avaya Call";
     document.getElementById("f-avaya").value="";
     document.getElementById("f-avaya-dept").value="";
     document.getElementById("f-avaya-reason").value="";
     document.getElementById("f-avaya-rmk").value="";
     document.getElementById("f-task-no").value="";
-    document.getElementById("f-action").value="";
-    document.getElementById("f-core-ticket").value="No";
     document.getElementById("f-has-task").value="No";
-    document.getElementById("core-tkt-grp").querySelectorAll(".tgl").forEach(function(b,i){b.classList.toggle("sel",i===1);});
     document.getElementById("has-task-grp").querySelectorAll(".tgl").forEach(function(b,i){b.classList.toggle("sel",i===1);});
-    document.getElementById("action-grp").querySelectorAll(".tgl").forEach(function(b){b.classList.remove("sel");});
     document.getElementById("task-no-wrap").style.display="none";
-    var m=document.getElementById("smsg"); m.style.display="inline"; setTimeout(function(){m.style.display="none";},2500);
+    showSaved("avaya");
     refreshAll();
   });
 }
